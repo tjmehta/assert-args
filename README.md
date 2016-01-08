@@ -1,4 +1,4 @@
-# assert-args
+# assert-args [![Build Status](https://travis-ci.org/tjmehta/assert-args.svg)](https://travis-ci.org/tjmehta/assert-args) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](http://standardjs.com/)
 Validate and format function arguments ( handles types and optionals)
 
 ## Installation
@@ -10,16 +10,20 @@ npm install --save assert-args
 ### assertArgs(arguments, validator)
 Assert argument types and format arguments into an object
 ```js
-function something (/*foo, bar, ...qux*/) {
+function something (foo, bar, baz, qux, corges) {
   var args = assertArgs(arguments, {
-    'foo': 'object',      // foo is required and must be a string
-    '[bar]': 'SomeClass', // bar is optional and must be an instance of 'SomeClass'
-    '...qux': 'number'    // qux is required and captures multiple arguments that must be numbers
+    'foo': 'object',            // foo is required and must be a object
+    '[bar]': SomeClass,         // bar is optional and must be an instance of 'SomeClass'
+    'baz'  : someTest           // baz must pass someTest (someTest should throw an error if it fails)
+    'qux': ['string', 'number'] // qux is required and must be a string or number
+    '...corges': 'function'     // corges is required and captures multiple arguments that must be functions
 
   })
-  var foo = args.foo
-  var bar = args.bar
-  var qux = args.qux
+  foo = args.foo
+  bar = args.bar
+  baz = args.baz
+  qux = args.qux
+  corge = args.corge // will be an array
   /// ...
 }
 ```
