@@ -10,7 +10,7 @@ npm install --save assert-args
 ### assertArgs(arguments, validator)
 Assert argument types and format arguments into an object
 ```js
-function something (foo, bar, baz, qux, corges) {
+function something (foo, bar, baz, qux, corge) {
   var args = assertArgs(arguments, {
     'foo': 'object',            // foo is required and must be a object
     '[bar]': SomeClass,         // bar is optional and must be an instance of 'SomeClass'
