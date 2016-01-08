@@ -1,6 +1,6 @@
 {
   "name": "assert-args",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Validate and format function arguments ( handles types and optionals)",
   "main": "index.js",
   "scripts": {
