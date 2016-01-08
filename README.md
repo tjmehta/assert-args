@@ -1,4 +1,4 @@
-# assert-args
+# assert-args [![Build Status](https://travis-ci.org/tjmehta/assert-args.svg)](https://travis-ci.org/tjmehta/assert-args) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](http://standardjs.com/)
 Validate and format function arguments ( handles types and optionals)
 
 ## Installation
