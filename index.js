@@ -51,12 +51,19 @@ function assertArgs (args, validation) {
             argsLeft.shift() // pass, remains [...]
             return
           }
-
-          validate(key.slice(1, -1), arg, validator, true)
-          // optional arg passes validator
-          firstOptionalErr = null
-          ret[outKey].push(arg) // pass
-          argsLeft.shift()
+          try {
+            validate(key.slice(1, -1), arg, validator, true)
+            // optional arg passes validator
+            firstOptionalErr = null
+            ret[outKey].push(arg) // pass
+            argsLeft.shift()
+          } catch (err) {
+            if (firstOptionalErr && argsLeft.length > 1) {
+              // optional err was thrown before and this is not the last arg
+              throw firstOptionalErr
+            }
+            throw err
+          }
         })
       } else { // isRequiredKey
         outKey = key.slice(3)
@@ -70,16 +77,24 @@ function assertArgs (args, validation) {
           ? argsLeft.slice()
           : argsLeft.slice(0, argsLeft.length - (argKeys.length - 1 - i))
 
-        // : argsLeft.slice() // copy
         if (spreadArgs.length === 0) {
           // missing trailing required arg, fail
           throw new TypeError('"' + key + '" is required')
         }
 
         spreadArgs.forEach(function (arg) {
-          validate(key, arg, validator, true)
-          ret[outKey].push(arg) // pass
-          argsLeft.shift()
+          try {
+            validate(key, arg, validator, true)
+            firstOptionalErr = null
+            ret[outKey].push(arg) // pass
+            argsLeft.shift()
+          } catch (err) {
+            if (firstOptionalErr && argsLeft.length > 1) {
+              // optional err was thrown before and this is not the last arg
+              throw firstOptionalErr
+            }
+            throw err
+          }
         })
       }
       return
@@ -116,10 +131,18 @@ function assertArgs (args, validation) {
         // missing trailing required arg, fail
         throw new TypeError('"' + key + '" is required')
       }
-      validate(key, arg, validator)
-      // required arg passes validator, pass
-      firstOptionalErr = null
-      ret[key] = argsLeft.shift()
+      try {
+        validate(key, arg, validator)
+        // required arg passes validator, pass
+        firstOptionalErr = null
+        ret[key] = argsLeft.shift()
+      } catch (err) {
+        if (firstOptionalErr && argsLeft.length > 1) {
+          // optional err was thrown before and this is not the last arg
+          throw firstOptionalErr
+        }
+        throw err
+      }
       return
     }
   })

@@ -235,16 +235,18 @@ describe('assert-args', function () {
         ['str'],
         ['str', null],
         ['str', undefined],
-        ['str', {}]
+        ['str', {}],
+        ['str', {}, function () {}]
       ]
       var expectedErrors = [
         '"cb" is required',
         '"cb" is required',
         '"cb" is required',
         '"cb" is required',
+        '"cb" is required',
+        '"cb" is required',
         '"cb" must be a function',
-        '"cb" must be a function',
-        '"cb" must be a function'
+        '"bar" must be a string'
       ]
       invalidArgs.forEach(function (args, i) {
         // generated test
@@ -252,6 +254,7 @@ describe('assert-args', function () {
           expect(function () {
             assertArgs(args, {
               '[foo]': 'string',
+              '[bar]': 'string',
               'cb': 'function'
             })
           }).to.throw(TypeError, expectedErrors[i])
@@ -338,13 +341,15 @@ describe('assert-args', function () {
         })
 
         var invalidArgs = [
-          [null, 'no'],
-          [10, 'no'],
-          [10, 10, 'no'],
-          [10, 'no', fn]
+          [null, null, 'no'],
+          ['no', fn],
+          [{}, 10, 'no'],
+          [{}, 10, 10, 'no'],
+          [{}, 10, 'no', fn]
         ]
         var expectedErrors = [
           '"bar" must be a function',
+          '"qux" must be an object',
           '"bar" must be a function',
           '"bar" must be a function',
           '"...foo" must be numbers'
@@ -354,6 +359,7 @@ describe('assert-args', function () {
           it('should throw: ' + i, function (done) {
             expect(function () {
               assertArgs(args, {
+                '[qux]': 'object',
                 '[...foo]': 'number',
                 'bar': 'function'
               })
@@ -456,14 +462,16 @@ describe('assert-args', function () {
         })
 
         var invalidArgs = [
-          [fn],
-          [10, 'no'],
-          [10, 10, 'no'],
-          [10, 'no', fn]
+          [{}, fn],
+          [{}, 10, 'no'],
+          ['str', 10, fn],
+          [{}, 10, 10, 'no'],
+          [{}, 10, 'no', fn]
         ]
         var expectedErrors = [
           '"...foo" is required',
           '"bar" must be a function',
+          '"qux" must be an object',
           '"bar" must be a function',
           '"...foo" must be numbers'
         ]
@@ -472,6 +480,7 @@ describe('assert-args', function () {
           it('should throw: ' + i, function (done) {
             expect(function () {
               assertArgs(args, {
+                '[qux]': 'object',
                 '...foo': 'number',
                 'bar': 'function'
               })
