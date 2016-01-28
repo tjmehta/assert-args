@@ -39,8 +39,6 @@
     "compound-subject": "0.0.1",
     "get-prototype-of": "0.0.0",
     "is-capitalized": "^1.0.0",
-    "is-class": "0.0.3",
-    "mock-require": "^1.2.1",
-    "object-loops": "^0.5.1"
+    "is-class": "0.0.3"
   }
 }
