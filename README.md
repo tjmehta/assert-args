@@ -16,7 +16,7 @@ function something (foo, bar, baz, qux, corge) {
     '[bar]': SomeClass,         // bar is optional and must be an instance of 'SomeClass'
     'baz'  : someTest           // baz must pass someTest (someTest should throw an error if it fails)
     'qux': ['string', 'number'] // qux is required and must be a string or number
-    '...corge': 'function'     // corges is required and captures multiple arguments that must be functions
+    '...corge': 'function'     // corge is required and captures multiple arguments that must be functions
 
   })
   foo = args.foo
