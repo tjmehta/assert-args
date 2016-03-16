@@ -65,41 +65,81 @@ describe('assert-args', function () {
       })
       done()
     })
+    // string tests
+    describe('string tests', function () {
+      var validArgs = [
+        ['str'],
+        /*eslint-disable */
+        [new String('str')]
+        /*eslint-enable */
+      ]
+      validArgs.forEach(function (args) {
+        // generated test
+        it('should return args if validations pass', function (done) {
+          var out = assertArgs(args, {
+            foo: 'string'
+          })
+          expect(out).to.deep.equal({
+            foo: args[0]
+          })
+          done()
+        })
+      })
 
-    var validArgs = [
-      ['str'],
-      /*eslint-disable */
-      [new String('str')]
-    /*eslint-enable */
-    ]
-    validArgs.forEach(function (args) {
-      // generated test
-      it('should return args if validations pass', function (done) {
-        var out = assertArgs(args, {
-          foo: 'string'
+      var invalidArgs = [
+        [10],
+        [/regexp/],
+        [{}],
+        [[]]
+      ]
+      invalidArgs.forEach(function (args) {
+        // generated test
+        it('should throw', function (done) {
+          expect(function () {
+            assertArgs(args, {
+              foo: 'string'
+            })
+          }).to.throw(TypeError, '"foo" must be a string')
+          done()
         })
-        expect(out).to.deep.equal({
-          foo: args[0]
-        })
-        done()
       })
     })
 
-    var invalidArgs = [
-      [10],
-      [/regexp/],
-      [{}],
-      [[]]
-    ]
-    invalidArgs.forEach(function (args) {
-      // generated test
-      it('should throw', function (done) {
-        expect(function () {
-          assertArgs(args, {
-            foo: 'string'
+    describe('integer tests', function () {
+      // integer tests
+      var validArgs = [
+        [10],
+        [-10]
+      ]
+      validArgs.forEach(function (args) {
+        // generated test
+        it('should return args if validations pass', function (done) {
+          var out = assertArgs(args, {
+            foo: 'integer'
           })
-        }).to.throw(TypeError, '"foo" must be a string')
-        done()
+          expect(out).to.deep.equal({
+            foo: args[0]
+          })
+          done()
+        })
+      })
+
+      var invalidArgs = [
+        ['boom'],
+        [/regexp/],
+        [{}],
+        [[]]
+      ]
+      invalidArgs.forEach(function (args) {
+        // generated test
+        it('should throw', function (done) {
+          expect(function () {
+            assertArgs(args, {
+              foo: 'integer'
+            })
+          }).to.throw(TypeError, '"foo" must be an integer')
+          done()
+        })
       })
     })
   })
