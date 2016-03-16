@@ -29,7 +29,7 @@
   "homepage": "https://github.com/tjmehta/assert-args",
   "devDependencies": {
     "code": "^1.5.0",
-    "lab": "^5.18.1",
+    "lab": "tjmehta/lab#lab5-coverage-fix",
     "proxyquire": "^1.7.3",
     "sinon": "^1.17.2",
     "standard": "^5.4.1"
