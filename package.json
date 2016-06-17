@@ -4,7 +4,9 @@
   "description": "Validate and format function arguments ( handles types and optionals)",
   "main": "index.js",
   "scripts": {
-    "test": "lab --assert code --threshold 100",
+    "test": "lab --verbose --assert code --threshold 100",
+    "test-no-cov": "lab --verbose --assert code",
+    "test-watch": "nodemon -x npm run test-no-cov",
     "lint": "standard",
     "format": "standard --format"
   },
@@ -37,6 +39,7 @@
   "dependencies": {
     "101": "^1.2.0",
     "compound-subject": "0.0.1",
+    "debug": "^2.2.0",
     "get-prototype-of": "0.0.0",
     "is-capitalized": "^1.0.0",
     "is-class": "0.0.4"

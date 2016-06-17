@@ -1,9 +1,13 @@
+var debug = require('debug')('assert-args')
 var exists = require('101/exists')
 var isObject = require('101/is-object')
+var not = require('101/not')
 
 var isOptionalKey = require('./lib/is-optional-key.js')
 var isSpreadKey = require('./lib/is-spread-key.js')
 var validate = require('./lib/validate.js')
+
+var isRequiredKey = not(isOptionalKey)
 
 module.exports = assertArgs
 
@@ -32,18 +36,24 @@ function assertArgs (args, validation) {
     var arg = argsLeft[0]
 
     if (isSpreadKey(key)) {
+      debug('is spread key: ' + key)
+      var requiredOffset = argKeys.slice(i + 1).filter(isRequiredKey).length
+      spreadArgs = (!requiredOffset || (argKeys.length - i - requiredOffset === 0)) // last arg key
+        ? argsLeft.slice()
+        : argsLeft.slice(0, argsLeft.length - Math.max(argKeys.length - i - requiredOffset))
+
+      debug('required offset: ' + requiredOffset)
+      debug('argsLeft.length', argsLeft.length)
+      debug('argKeys.length', argKeys.length)
+      debug('numArgKeysLeft', (argKeys.length - requiredOffset - i))
+      debug('numArgToSlice', spreadArgs.length)
+
       if (isOptionalKey(key)) {
+        debug('is optional spread key: ' + key)
         outKey = key.slice(4, -1)
         ret[outKey] = []
-        // console.log('argsLeft.length', argsLeft.length)
-        // console.log('argKeys.length', argKeys.length)
-        // console.log('numArgKeysLeft', argKeys.length - 1 - i)
-        // console.log('numArgToSlice', argsLeft.length - (argKeys.length - 1 - i))
 
-        spreadArgs = (argKeys.length - i - 1) === 0 // last arg key
-          ? argsLeft.slice()
-          : argsLeft.slice(0, argsLeft.length - (argKeys.length - 1 - i))
-
+        debug('possible spread args: ' + spreadArgs)
         spreadArgs.forEach(function (arg) {
           if (!exists(arg)) {
             // non-existant args pass as optional args
@@ -65,23 +75,17 @@ function assertArgs (args, validation) {
             throw err
           }
         })
-      } else { // isRequiredKey
+      } else { // isSpreadKey && isRequiredKey
+        debug('is required spread key: ' + key)
         outKey = key.slice(3)
         ret[outKey] = []
-        // console.log('argsLeft.length', argsLeft.length)
-        // console.log('argKeys.length', argKeys.length)
-        // console.log('numArgKeysLeft', (argKeys.length - 1 - i))
-        // console.log('numArgToSlice', argsLeft.length - (argKeys.length - 1 - i))
-
-        spreadArgs = (argKeys.length - i - 1) === 0 // last arg key
-          ? argsLeft.slice()
-          : argsLeft.slice(0, argsLeft.length - (argKeys.length - 1 - i))
 
         if (spreadArgs.length === 0) {
           // missing trailing required arg, fail
           throw new TypeError('"' + key + '" is required')
         }
 
+        debug('possible spread args: ' + spreadArgs)
         spreadArgs.forEach(function (arg) {
           try {
             validate(key, arg, validator, true)
@@ -99,6 +103,7 @@ function assertArgs (args, validation) {
       }
       return
     } else if (isOptionalKey(key)) {
+      debug('is optional key: ' + key)
       key = key.slice(1, -1)
 
       if (argsLeft.length === 0) {
@@ -127,6 +132,7 @@ function assertArgs (args, validation) {
         return
       }
     } else { // isRequiredKey
+      debug('is required key: ' + key)
       if (argsLeft.length === 0) {
         // missing trailing required arg, fail
         throw new TypeError('"' + key + '" is required')
