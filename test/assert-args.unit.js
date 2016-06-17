@@ -441,6 +441,32 @@ describe('assert-args', function () {
           })
         })
 
+        describe('followed by optional', function () {
+          var validArgs = [
+            [10],
+            [10, 10],
+            [10, 10, 10],
+            [10, 10, 10, 10]
+          ]
+          var expectedResults = [
+            { foo: [10], bar: undefined },
+            { foo: [10, 10], bar: undefined },
+            { foo: [10, 10, 10], bar: undefined },
+            { foo: [10, 10, 10, 10], bar: undefined }
+          ]
+          validArgs.slice(0, 1).forEach(function (args, i) {
+            // generated test
+            it('should return args if validations pass: ' + i, function (done) {
+              var out = assertArgs(args, {
+                '[...foo]': 'number',
+                '[bar]': 'function'
+              })
+              expect(out).to.deep.equal(expectedResults[i])
+              done()
+            })
+          })
+        })
+
         var invalidArgs = [
           [null],
           [undefined],
@@ -498,6 +524,32 @@ describe('assert-args', function () {
             })
             expect(out).to.deep.equal(expectedResults[i])
             done()
+          })
+        })
+
+        describe('followed by optional', function () {
+          var validArgs = [
+            [10],
+            [10, 10],
+            [10, 10, 10],
+            [10, 10, 10, 10]
+          ]
+          var expectedResults = [
+            { foo: [10], bar: undefined },
+            { foo: [10, 10], bar: undefined },
+            { foo: [10, 10, 10], bar: undefined },
+            { foo: [10, 10, 10, 10], bar: undefined }
+          ]
+          validArgs.slice(0, 1).forEach(function (args, i) {
+            // generated test
+            it('should return args if validations pass: ' + i, function (done) {
+              var out = assertArgs(args, {
+                '...foo': 'number',
+                '[bar]': 'function'
+              })
+              expect(out).to.deep.equal(expectedResults[i])
+              done()
+            })
           })
         })
 
