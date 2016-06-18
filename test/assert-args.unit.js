@@ -40,6 +40,16 @@ describe('assert-args', function () {
       }).to.throw(TypeError, '"foo" is required')
       done()
     })
+    it('should not throw for extra args', function (done) {
+      expect(function () {
+        var args = [1, 2, 3]
+        assertArgs(args, {
+          foo: '*',
+          bar: '*'
+        })
+      }).to.not.throw()
+      done()
+    })
   })
 
   describe('type arguments', function () {
@@ -348,32 +358,30 @@ describe('assert-args', function () {
       })
     })
     describe('optional', function () {
-      describe('leading', function () {
-        var fn = function () {}
+      var fn = function () {}
+
+      describe('only', function () {
         var validArgs = [
-          [fn],
-          [null, fn],
-          [undefined, fn],
-          [undefined, undefined, undefined, fn],
-          [10, fn],
-          [10, 10, fn],
-          [10, 10, 10, fn]
+          [],
+          [null],
+          [undefined, undefined],
+          [10],
+          [10, 10],
+          [10, 10, 10]
         ]
         var expectedResults = [
-          { foo: [], bar: fn },
-          { foo: [], bar: fn },
-          { foo: [], bar: fn },
-          { foo: [], bar: fn },
-          { foo: [10], bar: fn },
-          { foo: [10, 10], bar: fn },
-          { foo: [10, 10, 10], bar: fn }
+          { foo: [] },
+          { foo: [] },
+          { foo: [] },
+          { foo: [10] },
+          { foo: [10, 10] },
+          { foo: [10, 10, 10] }
         ]
         validArgs.forEach(function (args, i) {
           // generated test
           it('should return args if validations pass: ' + i, function (done) {
             var out = assertArgs(args, {
-              '[...foo]': 'number',
-              'bar': 'function'
+              '[...foo]': 'number'
             })
             expect(out).to.deep.equal(expectedResults[i])
             done()
@@ -381,17 +389,11 @@ describe('assert-args', function () {
         })
 
         var invalidArgs = [
-          [null, null, 'no'],
-          ['no', fn],
-          [{}, 10, 'no'],
-          [{}, 10, 10, 'no'],
-          [{}, 10, 'no', fn]
+          ['no'],
+          [null, 'no']
         ]
         var expectedErrors = [
-          '"bar" must be a function',
-          '"qux" must be an object',
-          '"bar" must be a function',
-          '"bar" must be a function',
+          '"...foo" must be numbers',
           '"...foo" must be numbers'
         ]
         invalidArgs.forEach(function (args, i) {
@@ -399,9 +401,7 @@ describe('assert-args', function () {
           it('should throw: ' + i, function (done) {
             expect(function () {
               assertArgs(args, {
-                '[qux]': 'object',
-                '[...foo]': 'number',
-                'bar': 'function'
+                '[...foo]': 'number'
               })
             }).to.throw(TypeError, expectedErrors[i])
             done()
@@ -409,52 +409,95 @@ describe('assert-args', function () {
         })
       })
 
-      describe('trailing', function () {
-        var fn = function () {}
-        var validArgs = [
-          [fn],
-          [fn, null],
-          [fn, undefined],
-          [fn, undefined, undefined, undefined],
-          [fn, 10],
-          [fn, 10, 10],
-          [fn, 10, 10, 10]
-        ]
-        var expectedResults = [
-          { foo: fn, bar: [] },
-          { foo: fn, bar: [] },
-          { foo: fn, bar: [] },
-          { foo: fn, bar: [] },
-          { foo: fn, bar: [10] },
-          { foo: fn, bar: [10, 10] },
-          { foo: fn, bar: [10, 10, 10] }
-        ]
-        validArgs.forEach(function (args, i) {
-          // generated test
-          it('should return args if validations pass: ' + i, function (done) {
-            var out = assertArgs(args, {
-              'foo': 'function',
-              '[...bar]': 'number'
-            })
-            expect(out).to.deep.equal(expectedResults[i])
-            done()
-          })
-        })
-
-        describe('followed by optional', function () {
+      describe('leading', function () {
+        describe('required', function () {
           var validArgs = [
-            [10],
-            [10, 10],
-            [10, 10, 10],
-            [10, 10, 10, 10]
+            [fn],
+            [null, fn],
+            [undefined, fn],
+            [undefined, undefined, undefined, fn],
+            [10, fn],
+            [10, 10, fn],
+            [10, 10, 10, fn]
           ]
           var expectedResults = [
-            { foo: [10], bar: undefined },
-            { foo: [10, 10], bar: undefined },
-            { foo: [10, 10, 10], bar: undefined },
-            { foo: [10, 10, 10, 10], bar: undefined }
+            { foo: [], bar: fn },
+            { foo: [], bar: fn },
+            { foo: [], bar: fn },
+            { foo: [], bar: fn },
+            { foo: [10], bar: fn },
+            { foo: [10, 10], bar: fn },
+            { foo: [10, 10, 10], bar: fn }
           ]
-          validArgs.slice(0, 1).forEach(function (args, i) {
+          validArgs.forEach(function (args, i) {
+            // generated test
+            it('should return args if validations pass: ' + i, function (done) {
+              var out = assertArgs(args, {
+                '[...foo]': 'number',
+                'bar': 'function'
+              })
+              expect(out).to.deep.equal(expectedResults[i])
+              done()
+            })
+          })
+
+          var invalidArgs = [
+            [null, null, 'no'],
+            ['no', fn],
+            [{}, 10, 'no'],
+            [{}, 10, 10, 'no'],
+            [{}, 10, 'no', fn]
+          ]
+          var expectedErrors = [
+            '"bar" must be a function',
+            '"qux" must be an object',
+            '"bar" must be a function',
+            '"bar" must be a function',
+            '"...foo" must be numbers'
+          ]
+          invalidArgs.forEach(function (args, i) {
+            // generated test
+            it('should throw: ' + i, function (done) {
+              expect(function () {
+                assertArgs(args, {
+                  '[qux]': 'object',
+                  '[...foo]': 'number',
+                  'bar': 'function'
+                })
+              }).to.throw(TypeError, expectedErrors[i])
+              done()
+            })
+          })
+        })
+        describe('optional', function () {
+          var fn = function () {}
+          var validArgs = [
+            [],
+            [null],
+            [null, null],
+            [fn],
+            [null, fn],
+            [undefined, fn],
+            [undefined, undefined, undefined, fn],
+            [undefined, undefined, undefined, null],
+            [10, fn],
+            [10, 10, fn],
+            [10, 10, 10, fn]
+          ]
+          var expectedResults = [
+            { foo: [], bar: undefined },
+            { foo: [], bar: undefined },
+            { foo: [], bar: undefined },
+            { foo: [], bar: fn },
+            { foo: [], bar: fn },
+            { foo: [], bar: fn },
+            { foo: [], bar: fn },
+            { foo: [], bar: undefined },
+            { foo: [10], bar: fn },
+            { foo: [10, 10], bar: fn },
+            { foo: [10, 10, 10], bar: fn }
+          ]
+          validArgs.forEach(function (args, i) {
             // generated test
             it('should return args if validations pass: ' + i, function (done) {
               var out = assertArgs(args, {
@@ -465,82 +508,283 @@ describe('assert-args', function () {
               done()
             })
           })
-        })
 
-        var invalidArgs = [
-          [null],
-          [undefined],
-          [null, 10],
-          [undefined, 10],
-          ['yes', 'no'],
-          ['yes', null, 'no'],
-          ['yes', undefined, 'no']
-        ]
-        var expectedErrors = [
-          '"foo" must be a string',
-          '"foo" must be a string',
-          '"foo" must be a string',
-          '"foo" must be a string',
-          '"...bar" must be numbers',
-          '"...bar" must be numbers',
-          '"...bar" must be numbers'
-        ]
-        invalidArgs.forEach(function (args, i) {
-          // generated test
-          it('should throw: ' + i, function (done) {
-            expect(function () {
-              assertArgs(args, {
-                'foo': 'string',
+          var invalidArgs = [
+            [null, null, 'no'],
+            ['no', fn],
+            [{}, 10, 'no'],
+            [{}, 10, 10, 'no'],
+            [{}, 10, 'no', fn]
+          ]
+          var expectedErrors = [
+            '"...foo" must be numbers',
+            '"qux" must be an object',
+            '"...foo" must be numbers',
+            '"...foo" must be numbers',
+            '"...foo" must be numbers'
+          ]
+          invalidArgs.forEach(function (args, i) {
+            // generated test
+            it('should throw: ' + i, function (done) {
+              expect(function () {
+                assertArgs(args, {
+                  '[qux]': 'object',
+                  '[...foo]': 'number',
+                  '[bar]': 'function'
+                })
+              }).to.throw(TypeError, expectedErrors[i])
+              done()
+            })
+          })
+        })
+      })
+
+      describe('trailing', function () {
+        describe('required', function () {
+          var fn = function () {}
+          var validArgs = [
+            [fn],
+            [fn, null],
+            [fn, undefined],
+            [fn, undefined, undefined, undefined],
+            [fn, 10],
+            [fn, 10, 10],
+            [fn, 10, 10, 10]
+          ]
+          var expectedResults = [
+            { foo: fn, bar: [] },
+            { foo: fn, bar: [] },
+            { foo: fn, bar: [] },
+            { foo: fn, bar: [] },
+            { foo: fn, bar: [10] },
+            { foo: fn, bar: [10, 10] },
+            { foo: fn, bar: [10, 10, 10] }
+          ]
+          validArgs.forEach(function (args, i) {
+            // generated test
+            it('should return args if validations pass: ' + i, function (done) {
+              var out = assertArgs(args, {
+                'foo': 'function',
                 '[...bar]': 'number'
               })
-            }).to.throw(TypeError, expectedErrors[i])
-            done()
+              expect(out).to.deep.equal(expectedResults[i])
+              done()
+            })
+          })
+
+          var invalidArgs = [
+            [null],
+            [undefined],
+            [null, 10],
+            [undefined, 10],
+            ['yes', 'no'],
+            ['yes', null, 'no'],
+            ['yes', undefined, 'no']
+          ]
+          var expectedErrors = [
+            '"foo" must be a string',
+            '"foo" must be a string',
+            '"foo" must be a string',
+            '"foo" must be a string',
+            '"...bar" must be numbers',
+            '"...bar" must be numbers',
+            '"...bar" must be numbers'
+          ]
+          invalidArgs.forEach(function (args, i) {
+            // generated test
+            it('should throw: ' + i, function (done) {
+              expect(function () {
+                assertArgs(args, {
+                  'foo': 'string',
+                  '[...bar]': 'number'
+                })
+              }).to.throw(TypeError, expectedErrors[i])
+              done()
+            })
+          })
+        })
+
+        describe('optional', function () {
+          var validArgs = [
+            [null],
+            [undefined],
+            [null, 10],
+            [undefined, 10],
+            [10],
+            [10, 10],
+            [10, 10, 10],
+            [10, 10, 10, 10],
+            [fn, 10, 10, 10, 10]
+          ]
+          var expectedResults = [
+            { bar: [], foo: null },
+            { bar: [], foo: undefined },
+            { bar: [10], foo: null },
+            { bar: [10], foo: undefined },
+            { bar: [10], foo: undefined },
+            { bar: [10, 10], foo: undefined },
+            { bar: [10, 10, 10], foo: undefined },
+            { bar: [10, 10, 10, 10], foo: undefined },
+            { bar: [10, 10, 10, 10], foo: fn }
+          ]
+          validArgs.forEach(function (args, i) {
+            // generated test
+            it('should return args if validations pass: ' + i, function (done) {
+              var out = assertArgs(args, {
+                '[foo]': 'function',
+                '[...bar]': 'number'
+              })
+              expect(out).to.deep.equal(expectedResults[i])
+              done()
+            })
+          })
+
+          var invalidArgs = [
+            [fn],
+            ['yes', 'no'],
+            ['yes', null, 'no'],
+            ['yes', undefined, 'no']
+          ]
+          var expectedErrors = [
+            '"foo" must be a string',
+            '"...bar" must be numbers',
+            '"...bar" must be numbers',
+            '"...bar" must be numbers'
+          ]
+          invalidArgs.forEach(function (args, i) {
+            // generated test
+            it('should throw: ' + i, function (done) {
+              expect(function () {
+                assertArgs(args, {
+                  '[foo]': 'string',
+                  '[...bar]': 'number'
+                })
+              }).to.throw(TypeError, expectedErrors[i])
+              done()
+            })
           })
         })
       })
     })
 
     describe('required', function () {
-      describe('leading', function () {
-        var fn = function () {}
+      describe('only', function () {
         var validArgs = [
-          [10, fn],
-          [10, 10, fn],
-          [10, 10, 10, fn],
-          [10, 10, 10, 10, fn]
+          [10],
+          [10, 10],
+          [10, 10, 10]
         ]
         var expectedResults = [
-          { foo: [10], bar: fn },
-          { foo: [10, 10], bar: fn },
-          { foo: [10, 10, 10], bar: fn },
-          { foo: [10, 10, 10, 10], bar: fn }
+          { foo: [10] },
+          { foo: [10, 10] },
+          { foo: [10, 10, 10] }
         ]
         validArgs.forEach(function (args, i) {
           // generated test
           it('should return args if validations pass: ' + i, function (done) {
             var out = assertArgs(args, {
-              '...foo': 'number',
-              'bar': 'function'
+              '...foo': 'number'
             })
             expect(out).to.deep.equal(expectedResults[i])
             done()
           })
         })
 
-        describe('followed by optional', function () {
+        var invalidArgs = [
+          [],
+          ['no'],
+          [null, 'no']
+        ]
+        var expectedErrors = [
+          '"...foo" is required',
+          '"...foo" must be numbers',
+          '"...foo" must be numbers'
+        ]
+        invalidArgs.forEach(function (args, i) {
+          // generated test
+          it('should throw: ' + i, function (done) {
+            expect(function () {
+              assertArgs(args, {
+                '...foo': 'number'
+              })
+            }).to.throw(TypeError, expectedErrors[i])
+            done()
+          })
+        })
+      })
+
+      describe('leading', function () {
+        var fn = function () {}
+        describe('required', function () {
+          var validArgs = [
+            [10, fn],
+            [10, 10, fn],
+            [10, 10, 10, fn],
+            [10, 10, 10, 10, fn]
+          ]
+          var expectedResults = [
+            { foo: [10], bar: fn },
+            { foo: [10, 10], bar: fn },
+            { foo: [10, 10, 10], bar: fn },
+            { foo: [10, 10, 10, 10], bar: fn }
+          ]
+          validArgs.forEach(function (args, i) {
+            // generated test
+            it('should return args if validations pass: ' + i, function (done) {
+              var out = assertArgs(args, {
+                '...foo': 'number',
+                'bar': 'function'
+              })
+              expect(out).to.deep.equal(expectedResults[i])
+              done()
+            })
+          })
+
+          var invalidArgs = [
+            [{}, fn],
+            [{}, 10, 'no'],
+            ['str', 10, fn],
+            [{}, 10, 10, 'no'],
+            [{}, 10, 'no', fn]
+          ]
+          var expectedErrors = [
+            '"...foo" is required',
+            '"bar" must be a function',
+            '"qux" must be an object',
+            '"bar" must be a function',
+            '"...foo" must be numbers'
+          ]
+          invalidArgs.forEach(function (args, i) {
+            // generated test
+            it('should throw: ' + i, function (done) {
+              expect(function () {
+                assertArgs(args, {
+                  '[qux]': 'object',
+                  '...foo': 'number',
+                  'bar': 'function'
+                })
+              }).to.throw(TypeError, expectedErrors[i])
+              done()
+            })
+          })
+        })
+
+        describe('optional', function () {
           var validArgs = [
             [10],
             [10, 10],
             [10, 10, 10],
-            [10, 10, 10, 10]
+            [10, 10, 10, 10],
+            [10, 10, 10, 10, fn]
           ]
           var expectedResults = [
             { foo: [10], bar: undefined },
             { foo: [10, 10], bar: undefined },
             { foo: [10, 10, 10], bar: undefined },
-            { foo: [10, 10, 10, 10], bar: undefined }
+            { foo: [10, 10, 10, 10], bar: undefined },
+            { foo: [10, 10, 10, 10], bar: fn }
           ]
-          validArgs.slice(0, 1).forEach(function (args, i) {
+          validArgs.forEach(function (args, i) {
             // generated test
             it('should return args if validations pass: ' + i, function (done) {
               var out = assertArgs(args, {
@@ -550,34 +794,6 @@ describe('assert-args', function () {
               expect(out).to.deep.equal(expectedResults[i])
               done()
             })
-          })
-        })
-
-        var invalidArgs = [
-          [{}, fn],
-          [{}, 10, 'no'],
-          ['str', 10, fn],
-          [{}, 10, 10, 'no'],
-          [{}, 10, 'no', fn]
-        ]
-        var expectedErrors = [
-          '"...foo" is required',
-          '"bar" must be a function',
-          '"qux" must be an object',
-          '"bar" must be a function',
-          '"...foo" must be numbers'
-        ]
-        invalidArgs.forEach(function (args, i) {
-          // generated test
-          it('should throw: ' + i, function (done) {
-            expect(function () {
-              assertArgs(args, {
-                '[qux]': 'object',
-                '...foo': 'number',
-                'bar': 'function'
-              })
-            }).to.throw(TypeError, expectedErrors[i])
-            done()
           })
         })
       })
@@ -615,18 +831,18 @@ describe('assert-args', function () {
           [10, 'no', fn]
         ]
         var expectedErrors = [
-          '"...foo" is required',
-          '"bar" must be a function',
-          '"bar" must be a function',
-          '"...foo" must be numbers'
+          '"foo" must be a number',
+          '"...bar" must be functions',
+          '"...bar" must be functions',
+          '"...bar" must be functions'
         ]
         invalidArgs.forEach(function (args, i) {
           // generated test
-          it('should throw: ' + i, function (done) {
+          it('should throw: ' + i + ' ' + args, function (done) {
             expect(function () {
               assertArgs(args, {
-                '...foo': 'number',
-                'bar': 'function'
+                'foo': 'number',
+                '...bar': 'function'
               })
             }).to.throw(TypeError, expectedErrors[i])
             done()

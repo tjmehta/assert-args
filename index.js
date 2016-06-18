@@ -37,27 +37,23 @@ function assertArgs (args, validation) {
 
     if (isSpreadKey(key)) {
       debug('is spread key: ' + key)
-      var requiredOffset = argKeys.slice(i + 1).filter(isRequiredKey).length
-      spreadArgs = (!requiredOffset || (argKeys.length - i - requiredOffset === 0)) // last arg key
-        ? argsLeft.slice()
-        : argsLeft.slice(0, argsLeft.length - Math.max(argKeys.length - i - requiredOffset))
-
-      debug('required offset: ' + requiredOffset)
-      debug('argsLeft.length', argsLeft.length)
       debug('argKeys.length', argKeys.length)
-      debug('numArgKeysLeft', (argKeys.length - requiredOffset - i))
-      debug('numArgToSlice', spreadArgs.length)
+      debug('argsLeft.length', argsLeft.length)
+      var requiredKeysLeft = argKeys.slice(i + 1).filter(isRequiredKey)
+      debug('requiredKeysLeft', requiredKeysLeft)
+      spreadArgs = argsLeft.slice(0, argsLeft.length - requiredKeysLeft.length) // copy
+      debug('spreadArgs', spreadArgs)
+      debug('spreadArgs.length', spreadArgs.length)
 
       if (isOptionalKey(key)) {
         debug('is optional spread key: ' + key)
         outKey = key.slice(4, -1)
         ret[outKey] = []
 
-        debug('possible spread args: ' + spreadArgs)
         spreadArgs.forEach(function (arg) {
           if (!exists(arg)) {
             // non-existant args pass as optional args
-            firstOptionalErr = null
+            firstOptionalErr = null // reset after a pass
             argsLeft.shift() // pass, remains [...]
             return
           }
@@ -68,11 +64,14 @@ function assertArgs (args, validation) {
             ret[outKey].push(arg) // pass
             argsLeft.shift()
           } catch (err) {
-            if (firstOptionalErr && argsLeft.length > 1) {
-              // optional err was thrown before and this is not the last arg
+            debug('spread validate err: ' + err.message)
+            debug('spread validate argsLeft: ' + argsLeft)
+            if (firstOptionalErr) {
+              // other optional error already occurred, throw first.
               throw firstOptionalErr
+            } else {
+              firstOptionalErr = err
             }
-            throw err
           }
         })
       } else { // isSpreadKey && isRequiredKey
@@ -84,20 +83,27 @@ function assertArgs (args, validation) {
           // missing trailing required arg, fail
           throw new TypeError('"' + key + '" is required')
         }
-
-        debug('possible spread args: ' + spreadArgs)
         spreadArgs.forEach(function (arg) {
           try {
             validate(key, arg, validator, true)
+            // optional arg passes validator
             firstOptionalErr = null
             ret[outKey].push(arg) // pass
             argsLeft.shift()
           } catch (err) {
-            if (firstOptionalErr && argsLeft.length > 1) {
-              // optional err was thrown before and this is not the last arg
+            debug('spread validate err: ' + err.message)
+            debug('spread validate argsLeft: ' + argsLeft)
+            debug('spread validate argKeys: ' + argKeys)
+            if (firstOptionalErr) {
+              // other optional error already occurred, throw first.
               throw firstOptionalErr
+            } else if (argKeys.slice(i + 1).length === 0) {
+              // spread assumes all args passed are used.
+              // there are no args left. and this failed for spread. throw it.
+              throw err
+            } else {
+              firstOptionalErr = err
             }
-            throw err
           }
         })
       }
