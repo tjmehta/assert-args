@@ -94,15 +94,29 @@ function assertArgs (args, validation) {
             debug('spread validate err: ' + err.message)
             debug('spread validate argsLeft: ' + argsLeft)
             debug('spread validate argKeys: ' + argKeys)
-            if (firstOptionalErr) {
-              // other optional error already occurred, throw first.
-              throw firstOptionalErr
-            } else if (argKeys.slice(i + 1).length === 0) {
+
+            if (i === (argKeys.length - 1)) {
+              // spread is last arg.
               // spread assumes all args passed are used.
               // there are no args left. and this failed for spread. throw it.
-              throw err
+              if (firstOptionalErr) {
+                if ((argsLeft.length - 1) > requiredKeysLeft.length) {
+                  throw firstOptionalErr
+                } else {
+                  throw err
+                }
+              } else {
+                throw err
+              }
             } else {
-              firstOptionalErr = err
+              // leading/middle spread arg
+              if (firstOptionalErr) {
+                // other optional error already occurred, throw first.
+                throw firstOptionalErr
+              } else {
+                // set optional err
+                firstOptionalErr = err
+              }
             }
           }
         })
